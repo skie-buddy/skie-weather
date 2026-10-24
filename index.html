@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skie — the buddy that takes care of you from the weather</title>
+<meta name="description" content="Skie checks the weather every morning and sends one caring note: umbrella, sweater, or sunshine. Always free. No account, no ads.">
+<style>
+  :root{
+    --ink:#173f63; --ink-soft:#3d6584; --blue:#2f7fd0; --blue-deep:#1565c0;
+    --card:#ffffff; --line:#d8ebfa; --chip:#eaf6ff; --accent:#ff8fab;
+    --radius:24px; --shadow:0 10px 30px rgba(21,101,192,.13);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    color:var(--ink); line-height:1.6;
+    background:linear-gradient(180deg,#a8d8ff 0%,#cfeaff 34%,#eaf6ff 70%,#f7fcff 100%);
+    min-height:100vh;
+  }
+  .wrap{max-width:1060px; margin:0 auto; padding:0 20px;}
+  a{color:var(--blue-deep);}
+  h1,h2,h3{line-height:1.2; letter-spacing:-.01em;}
+  h2{font-size:clamp(1.6rem,4.5vw,2.3rem); margin-bottom:.4em; text-align:center;}
+  .section-sub{text-align:center; color:var(--ink-soft); max-width:640px; margin:0 auto 2rem;}
+  section{padding:64px 0 8px;}
+
+  /* ---------- Hero ---------- */
+  header.hero{padding:64px 0 24px; text-align:center;}
+  .hero .mascot{width:min(220px,55vw); height:auto; animation:bob 3.2s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  .hero h1{font-size:clamp(3rem,11vw,5.2rem); font-weight:900; color:var(--ink);}
+  .hero h1 .dot{color:var(--blue);}
+  .tagline{font-size:clamp(1.2rem,4.5vw,1.6rem); font-weight:700; color:var(--blue-deep); margin-top:2px;}
+  .promise{max-width:620px; margin:14px auto 0; color:var(--ink-soft); font-size:1.08rem;}
+  .cta{margin-top:28px; display:flex; flex-direction:column; align-items:center; gap:10px;}
+  .btn-download{
+    display:inline-block; background:var(--blue-deep); color:#fff; text-decoration:none;
+    font-weight:800; font-size:1.15rem; padding:16px 38px; border-radius:999px;
+    box-shadow:0 12px 26px rgba(21,101,192,.35); transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-download:hover,.btn-download:focus{transform:translateY(-2px); box-shadow:0 16px 32px rgba(21,101,192,.4);}
+  .alt-download{font-size:.95rem;}
+  .chips{margin-top:18px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center;}
+  .chip{background:rgba(255,255,255,.85); border:1px solid var(--line); color:var(--ink-soft);
+    padding:6px 14px; border-radius:999px; font-size:.88rem; font-weight:600;}
+
+  /* ---------- Phone demo ---------- */
+  .demo-controls{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:26px;}
+  .demo-btn{
+    font:inherit; font-weight:700; cursor:pointer; border:2px solid var(--line);
+    background:#fff; color:var(--ink-soft); padding:10px 22px; border-radius:999px;
+    transition:all .15s ease;
+  }
+  .demo-btn:hover{border-color:var(--blue);}
+  .demo-btn[aria-pressed="true"]{background:var(--blue-deep); border-color:var(--blue-deep); color:#fff;}
+  .phone{
+    width:min(350px,92vw); margin:0 auto; background:#10222f; border-radius:44px;
+    padding:12px; box-shadow:0 24px 50px rgba(16,34,47,.35);
+  }
+  .phone-screen{
+    background:linear-gradient(180deg,#bfe2ff,#eaf6ff); border-radius:34px;
+    padding:22px 18px 26px; min-height:480px; position:relative; overflow:hidden;
+  }
+  .phone-time{text-align:center; font-size:2rem; font-weight:800; color:var(--ink);}
+  .phone-date{text-align:center; color:var(--ink-soft); font-size:.9rem; margin-bottom:18px;}
+  .notif{
+    background:rgba(255,255,255,.96); border-radius:20px; padding:16px;
+    box-shadow:0 8px 20px rgba(21,101,192,.15);
+  }
+  .notif-head{display:flex; align-items:center; gap:8px; font-size:.8rem; font-weight:700; color:var(--ink-soft); margin-bottom:10px;}
+  .notif-head .appdot{width:20px; height:20px; border-radius:6px; background:var(--blue); display:inline-flex; align-items:center; justify-content:center; color:#fff; font-size:.72rem;}
+  .notif-body{display:flex; gap:12px; align-items:flex-start;}
+  .notif-body svg{flex:0 0 74px; width:74px; height:auto;}
+  .notif h3{font-size:1.02rem; margin-bottom:4px;}
+  .notif p{font-size:.9rem; color:var(--ink-soft);}
+  .notif-meta{margin-top:10px; font-size:.8rem; color:var(--ink-soft); font-weight:600;}
+  .pack{margin-top:14px;}
+  .pack h4{font-size:.85rem; margin-bottom:8px;}
+  .pack-list{display:flex; flex-wrap:wrap; gap:7px;}
+  .pack-item{background:var(--chip); border:1px solid var(--line); border-radius:999px;
+    padding:5px 12px; font-size:.83rem; font-weight:600;}
+  .demo-note{text-align:center; color:var(--ink-soft); font-size:.92rem; margin-top:18px;}
+
+  /* ---------- Cards / steps ---------- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px;}
+  .card{background:var(--card); border-radius:var(--radius); padding:26px 24px; box-shadow:var(--shadow);}
+  .card .icon{font-size:1.9rem; line-height:1; margin-bottom:12px;}
+  .card h3{font-size:1.12rem; margin-bottom:6px;}
+  .card p{color:var(--ink-soft); font-size:.97rem;}
+  .steps{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px; counter-reset:step;}
+  .step{background:var(--card); border-radius:var(--radius); padding:26px 24px; box-shadow:var(--shadow);}
+  .step .num{
+    width:38px; height:38px; border-radius:50%; background:var(--blue-deep); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:800; margin-bottom:12px;
+  }
+  .step h3{font-size:1.08rem; margin-bottom:6px;}
+  .step p{color:var(--ink-soft); font-size:.97rem;}
+
+  /* ---------- Free / install ---------- */
+  .free-card{
+    background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:38px 30px; text-align:center; max-width:760px; margin:0 auto;
+  }
+  .free-card .big{font-size:clamp(1.5rem,5vw,2rem); font-weight:900; margin-bottom:8px;}
+  .free-card p{color:var(--ink-soft); max-width:560px; margin:0 auto 10px;}
+  .free-card .heart{color:var(--accent); font-size:1.6rem;}
+  .install-note{
+    max-width:760px; margin:18px auto 0; background:#fff8e6; border:1px solid #ffe1a8;
+    border-radius:16px; padding:16px 20px; color:#6b5312; font-size:.95rem;
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq{max-width:760px; margin:0 auto; display:grid; gap:12px;}
+  .faq details{background:var(--card); border-radius:16px; box-shadow:var(--shadow); padding:18px 22px;}
+  .faq summary{font-weight:700; cursor:pointer; font-size:1.02rem;}
+  .faq details p{color:var(--ink-soft); margin-top:8px; font-size:.97rem;}
+
+  .coming{max-width:760px; margin:26px auto 0; text-align:center; color:var(--ink-soft); font-size:.95rem;}
+  footer{padding:56px 0 40px; text-align:center; color:var(--ink-soft);}
+  footer .fname{font-weight:900; color:var(--ink); font-size:1.2rem;}
+  @media (prefers-reduced-motion: reduce){
+    .hero .mascot{animation:none;}
+    html{scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <!-- Skie, the cloud buddy -->
+    <svg class="mascot" viewBox="0 0 220 170" role="img" aria-label="Skie, a smiling cloud buddy holding a small heart">
+      <ellipse cx="110" cy="104" rx="86" ry="50" fill="#ffffff"/>
+      <circle cx="66" cy="82" r="34" fill="#ffffff"/>
+      <circle cx="112" cy="62" r="44" fill="#ffffff"/>
+      <circle cx="156" cy="84" r="31" fill="#ffffff"/>
+      <circle cx="88" cy="92" r="5.5" fill="#173f63"/>
+      <circle cx="128" cy="92" r="5.5" fill="#173f63"/>
+      <path d="M96 108 q12 10 24 0" stroke="#173f63" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <circle cx="66" cy="106" r="8" fill="#ffd3de"/>
+      <circle cx="150" cy="106" r="8" fill="#ffd3de"/>
+      <path d="M186 30 c-4-8-18-8-20 2 c-1 6 4 12 12 18 c1 1 3 1 4 0 c8-6 13-12 12-18 c0-4-3-6-8-2z" fill="#ff8fab" transform="translate(-6,6) scale(0.9)"/>
+    </svg>
+    <h1>Skie<span class="dot">.</span></h1>
+    <p class="tagline">The buddy that takes care of you from the weather.</p>
+    <p class="promise">Every morning, Skie checks the weather for you and sends <strong>one caring note</strong> — take an umbrella, wear a sweater, drink some water. No charts. No data dumps. Just care, before you rush out the door.</p>
+    <div class="cta">
+      <a class="btn-download" href="https://github.com/skie-buddy/skie-weather/releases/download/v1.0.1/skie.apk">⬇ Download Skie for Android</a>
+      <a class="alt-download" href="./skie.apk">or download directly from this page</a>
+    </div>
+    <div class="chips" aria-label="App facts">
+      <span class="chip">Version 1.0.1</span>
+      <span class="chip">22 MB</span>
+      <span class="chip">Android 5.0 and up</span>
+      <span class="chip">Free forever</span>
+      <span class="chip">No account needed</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ============ Demo ============ -->
+  <section id="morning" aria-labelledby="morning-h">
+    <div class="wrap">
+      <h2 id="morning-h">A morning with Skie</h2>
+      <p class="section-sub">This is what lands on your phone at the time you pick (7:00 by default). Try the three kinds of mornings:</p>
+      <div class="demo-controls" role="group" aria-label="Choose a demo weather">
+        <button type="button" class="demo-btn" data-scenario="rain" aria-pressed="true">🌧 Rainy</button>
+        <button type="button" class="demo-btn" data-scenario="cold" aria-pressed="false">🧣 Cold</button>
+        <button type="button" class="demo-btn" data-scenario="hot" aria-pressed="false">☀️ Hot</button>
+      </div>
+      <div class="phone" role="img" aria-label="A phone showing Skie's morning care notification">
+        <div class="phone-screen">
+          <div class="phone-time">7:00</div>
+          <div class="phone-date">Good morning</div>
+          <div class="notif">
+            <div class="notif-head"><span class="appdot">S</span> SKIE · now</div>
+            <div class="notif-body">
+              <svg id="demoMascot" viewBox="0 0 220 190" aria-hidden="true">
+                <ellipse cx="105" cy="106" rx="80" ry="47" fill="#ffffff" stroke="#d8ebfa"/>
+                <circle cx="64" cy="86" r="31" fill="#ffffff" stroke="#d8ebfa"/>
+                <circle cx="108" cy="66" r="41" fill="#ffffff" stroke="#d8ebfa"/>
+                <circle cx="148" cy="88" r="28" fill="#ffffff" stroke="#d8ebfa"/>
+                <circle cx="86" cy="94" r="5" fill="#173f63"/>
+                <circle cx="122" cy="94" r="5" fill="#173f63"/>
+                <path d="M94 109 q10 9 20 0" stroke="#173f63" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                <circle cx="66" cy="107" r="7" fill="#ffd3de"/>
+                <circle cx="142" cy="107" r="7" fill="#ffd3de"/>
+                <!-- accessory: umbrella -->
+                <g id="acc-umbrella">
+                  <path d="M150 18 a34 34 0 0 1 68 0 z" fill="#2f7fd0"/>
+                  <rect x="181" y="16" width="5" height="46" rx="2.5" fill="#173f63"/>
+                  <path d="M186 62 q0 10 -9 10" stroke="#173f63" stroke-width="4" fill="none" stroke-linecap="round"/>
+                </g>
+                <!-- accessory: warm scarf (cold) -->
+                <g id="acc-scarf" style="display:none">
+                  <path d="M52 128 q55 20 110 0 l0 14 q-55 20 -110 0 z" fill="#ff8fab"/>
+                  <rect x="140" y="138" width="14" height="30" rx="6" fill="#ff8fab"/>
+                </g>
+                <!-- accessory: sunglasses + sun (hot) -->
+                <g id="acc-sun" style="display:none">
+                  <g stroke="#f5a623" stroke-width="4" stroke-linecap="round">
+                    <line x1="186" y1="2" x2="186" y2="12"/><line x1="164" y1="10" x2="171" y2="17"/>
+                    <line x1="208" y1="10" x2="201" y2="17"/><line x1="158" y1="30" x2="168" y2="30"/>
+                    <line x1="214" y1="30" x2="204" y2="30"/>
+                  </g>
+                  <circle cx="186" cy="30" r="13" fill="#ffcf5c"/>
+                  <rect x="66" y="84" width="34" height="17" rx="8" fill="#173f63"/>
+                  <rect x="106" y="84" width="34" height="17" rx="8" fill="#173f63"/>
+                  <rect x="98" y="89" width="10" height="4" fill="#173f63"/>
+                </g>
+              </svg>
+              <div>
+                <h3 id="demoHeadline">Rain today — take your umbrella</h3>
+                <p id="demoMessage">I checked for you — it is going to rain today from around 8:00 (88% chance). Please take your umbrella so you stay dry, okay? It will feel chilly, around 16°C, so a light jacket is a good idea too.</p>
+              </div>
+            </div>
+            <div class="notif-meta" id="demoMeta">13°–16°C · Rain 88% · Your location, auto-detected</div>
+            <div class="pack">
+              <h4>🎒 Pack this</h4>
+              <div class="pack-list" id="demoPack">
+                <span class="pack-item">Umbrella</span>
+                <span class="pack-item">Light jacket</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="demo-note">Inside the app you also get today's full care note and a simple 6-day outlook — written like a friend, not a forecast table.</p>
+    </div>
+  </section>
+
+  <!-- ============ Features ============ -->
+  <section id="features" aria-labelledby="features-h">
+    <div class="wrap">
+      <h2 id="features-h">What Skie does for you</h2>
+      <p class="section-sub">One job, done with care: making sure the weather never catches you unprepared.</p>
+      <div class="grid">
+        <article class="card">
+          <div class="icon" aria-hidden="true">💌</div>
+          <h3>Morning care note</h3>
+          <p>At the time you choose, Skie checks the weather and sends one caring notification with tomorrow's real care note — what to carry and wear, in plain friendly words.</p>
+        </article>
+        <article class="card">
+          <div class="icon" aria-hidden="true">📍</div>
+          <h3>GPS auto-location</h3>
+          <p>Skie finds where you are all by itself, so the care is always for <em>your</em> sky. Travel somewhere new and Skie follows you automatically.</p>
+        </article>
+        <article class="card">
+          <div class="icon" aria-hidden="true">🎒</div>
+          <h3>“Pack this” list</h3>
+          <p>Every note comes with a tiny checklist: umbrella when rain is coming (and the hour it starts), warm sweater when it's cold, water and sunscreen when it's hot.</p>
+        </article>
+        <article class="card">
+          <div class="icon" aria-hidden="true">☁️</div>
+          <h3>Animated buddy</h3>
+          <p>Skie is a little cloud friend who dresses for the advice — umbrella on rainy days, cozy layers in the cold, sunglasses in the heat. Care you can see.</p>
+        </article>
+        <article class="card">
+          <div class="icon" aria-hidden="true">🗓️</div>
+          <h3>6-day outlook</h3>
+          <p>Open the app for today's full care note plus the coming days at a glance — each day already translated into what it means for you.</p>
+        </article>
+        <article class="card">
+          <div class="icon" aria-hidden="true">🌍</div>
+          <h3>Works anywhere</h3>
+          <p>Weather comes from the free Open-Meteo service, covering the whole world. Prefer a fixed place? Preset cities are in Settings as a manual override.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ How it works ============ -->
+  <section id="how" aria-labelledby="how-h">
+    <div class="wrap">
+      <h2 id="how-h">How it works</h2>
+      <p class="section-sub">Three quiet steps, every single day.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="num" aria-hidden="true">1</div>
+          <h3>Pick your time</h3>
+          <p>Tell Skie when you want your morning note — 7:00 is the default. Allow location once, and you're done setting up.</p>
+        </div>
+        <div class="step">
+          <div class="num" aria-hidden="true">2</div>
+          <h3>Skie checks the sky</h3>
+          <p>Skie's care engine reads the real forecast for your location and translates numbers into decisions: rain at 8:00 means umbrella; a freezing morning means coat, scarf and gloves.</p>
+        </div>
+        <div class="step">
+          <div class="num" aria-hidden="true">3</div>
+          <h3>You get one caring note</h3>
+          <p>One notification, one pack-this list, zero stress. You walk out the door ready — like someone who loves you checked first.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Free forever ============ -->
+  <section id="free" aria-labelledby="free-h">
+    <div class="wrap">
+      <h2 id="free-h">Free forever — no paywall, no ads</h2>
+      <div class="free-card">
+        <div class="heart" aria-hidden="true">♥</div>
+        <p class="big">Skie is always free. For everyone.</p>
+        <p>No account. No ads. No premium tier, and no feature locked behind a payment — every bit of care Skie can give is yours from day one.</p>
+        <p>If Skie ever makes your mornings easier and you'd like to help cover weather data and servers, you'll be able to <strong>donate</strong> when donations open at launch. Donating is completely optional, any amount is appreciated — and it <strong>unlocks nothing, because nothing is locked</strong>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Install ============ -->
+  <section id="install" aria-labelledby="install-h">
+    <div class="wrap">
+      <h2 id="install-h">Install in 3 steps (Android)</h2>
+      <p class="section-sub">Skie is distributed as a direct download while the Play Store release is prepared.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="num" aria-hidden="true">1</div>
+          <h3>Download the APK</h3>
+          <p>Tap the big download button at the top of this page on your Android phone. The file is 22 MB.</p>
+        </div>
+        <div class="step">
+          <div class="num" aria-hidden="true">2</div>
+          <h3>Allow the install</h3>
+          <p>Open the downloaded file. If Android asks, allow “install unknown apps” for your browser — that's the standard prompt for any app installed outside the Play Store.</p>
+        </div>
+        <div class="step">
+          <div class="num" aria-hidden="true">3</div>
+          <h3>Say hello to Skie</h3>
+          <p>Open Skie, allow location so it can find your sky, and pick your morning-note time. Tomorrow at 7:00, Skie takes care of you.</p>
+        </div>
+      </div>
+      <div class="install-note" role="note">
+        <strong>Honest note:</strong> this is a test build, signed with a debug key, shared directly so early friends can try Skie. A signed Play Store release comes later. Works on Android 5.0 and up. <strong>iOS — coming later (needs Apple's process)</strong>; there is no iPhone download yet.
+      </div>
+      <p class="coming"><strong>Coming later:</strong> iOS version · pollen alerts · family care notes · Play Store release.</p>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section id="faq" aria-labelledby="faq-h">
+    <div class="wrap">
+      <h2 id="faq-h">Questions, answered honestly</h2>
+      <p class="section-sub">No fine print — Skie is a simple, kind app.</p>
+      <div class="faq">
+        <details>
+          <summary>Is it really free?</summary>
+          <p>Yes — completely. No account, no ads, no paywall and no locked features, forever. If you love Skie, you can donate when donations open at launch; it's optional and unlocks nothing, because nothing is locked.</p>
+        </details>
+        <details>
+          <summary>Which phones does Skie work on?</summary>
+          <p>Any Android phone running Android 5.0 or newer — that's almost every Android phone still in use. The download is a 22 MB APK file.</p>
+        </details>
+        <details>
+          <summary>Does Skie track me?</summary>
+          <p>No. Skie has no account and no tracking. Your location is used only to fetch the weather for where you are, at the moment Skie checks it — nothing is sold or shared.</p>
+        </details>
+        <details>
+          <summary>What about iPhone / iOS?</summary>
+          <p>An iOS version is planned, but it's not available yet — iPhone apps have to go through Apple's process. For now, Skie is Android only, and we'd rather tell you that plainly than promise a date we can't keep.</p>
+        </details>
+        <details>
+          <summary>Why does Android warn about “install unknown apps”?</summary>
+          <p>Because this test build is downloaded directly from this page instead of the Play Store, Android shows its standard caution prompt for any such install. It's expected — allow it for your browser just this once, and Skie installs like any other app. The Play Store release later won't need it.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="fname">Skie ☁️</p>
+    <p>The buddy that takes care of you from the weather — made with care.</p>
+    <p>Version 1.0.1 · Android · Free forever</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var scenarios = {
+    rain: {
+      headline: "Rain today — take your umbrella",
+      message: "I checked for you — it is going to rain today from around 8:00 (88% chance). Please take your umbrella so you stay dry, okay? It will feel chilly, around 16°C, so a light jacket is a good idea too.",
+      meta: "13°–16°C · Rain 88% · Your location, auto-detected",
+      pack: ["Umbrella", "Light jacket"],
+      acc: "acc-umbrella"
+    },
+    cold: {
+      headline: "Cold today — bundle up warm",
+      message: "It is a freezing morning, down to −2°C. Wear your warm coat, scarf and gloves — don't catch a cold for me, okay?",
+      meta: "−2°–3°C · Clear and frosty · Your location, auto-detected",
+      pack: ["Warm coat", "Scarf", "Gloves"],
+      acc: "acc-scarf"
+    },
+    hot: {
+      headline: "Hot today — water & shade",
+      message: "It is a hot day, up to 33°C. Carry your water bottle, put on sunscreen, and take breaks in the shade — I'll be worrying about you a little today.",
+      meta: "26°–33°C · Strong sun, UV 8 · Your location, auto-detected",
+      pack: ["Water bottle", "Sunscreen", "Hat"],
+      acc: "acc-sun"
+    }
+  };
+  var accIds = ["acc-umbrella", "acc-scarf", "acc-sun"];
+  var headline = document.getElementById("demoHeadline");
+  var message  = document.getElementById("demoMessage");
+  var meta     = document.getElementById("demoMeta");
+  var packList = document.getElementById("demoPack");
+  var buttons  = document.querySelectorAll(".demo-btn");
+
+  function setScenario(key){
+    var s = scenarios[key];
+    if(!s) return;
+    headline.textContent = s.headline;
+    message.textContent  = s.message;
+    meta.textContent     = s.meta;
+    packList.innerHTML = "";
+    s.pack.forEach(function(item){
+      var span = document.createElement("span");
+      span.className = "pack-item";
+      span.textContent = item;
+      packList.appendChild(span);
+    });
+    accIds.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.style.display = (id === s.acc) ? "" : "none";
+    });
+    buttons.forEach(function(b){
+      b.setAttribute("aria-pressed", b.getAttribute("data-scenario") === key ? "true" : "false");
+    });
+  }
+  buttons.forEach(function(b){
+    b.addEventListener("click", function(){ setScenario(b.getAttribute("data-scenario")); });
+  });
+})();
+</script>
+</body>
+</html>
